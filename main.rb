@@ -110,7 +110,7 @@ class StarboundPanel
         player[:last_connect] = time if @timing
         @players[name] = player
 
-        @online_players.push(player)
+        @online_players.push(player) unless @online_players.find { |pl| pl[:name] == name }
         @offline_players.delete_if { |pl| pl[:name] == name }
         puts "#{name} connected at #{player[:last_connect]}"
       when :logout
@@ -122,7 +122,7 @@ class StarboundPanel
         @players[name] = player
 
         @online_players.delete_if { |pl| pl[:name] == name }
-        @offline_players.push(player)
+        @offline_players.push(player) unless @offline_players.find { |pl| pl[:name] == name }
         puts "#{name} disconnected at #{player[:last_disconnect]}"
       when :world
         coords = event[1]
