@@ -8,25 +8,59 @@ set :port, 8000
 set :bind, "0.0.0.0"
 
 class StarboundPanel
-  def initialize(log_path)
-    @log_path = log_path
+  attr_accessor :log_path, :state_path
 
+  def self.load(log_path)
+    state_path = File.join(File.dirname(log_path), ".sbpanel")
+
+    state = nil
+    if File.exists?(state_path)
+      begin
+        state = Marshal.load(File.read(state_path))
+        puts "Loaded sbpanel state from #{state_path}"
+      rescue Exception
+        puts "Error loading sbpanel state, making new panel"
+      end
+    end
+
+    panel = StarboundPanel.new(state)
+
+    panel.log_path = log_path
+    panel.state_path = state_path
+    panel.update_status
+    panel
+  end
+
+  def initialize(state)
     @address = "starbound.mispy.me"
     @port = 21025
+    
+    @players = state[:players] || {} # Persist info for players we've seen
+    @worlds = state[:worlds] || {} # Persist info for worlds we've seen
+    @last_status_change = state[:last_status_change] || Time.now # Persist last observed status change
 
     @status = :unknown # Whether we're offline/online
-    @status_change_time = Time.now # When we last went offline/online
     @version = 'unknown' # Server version
-    @online_players = [] # Players and how long they've been online
-    @offline_players = [] # Players and how long they've been gone
-    @active_worlds = [] # Worlds and how long they've been active
+    @online_players = [] # Players we've seen connect
+    @active_worlds = [] # Worlds we've seen activated
+    @offline_players = @players.values.select { |pl| !@online_players.include?(pl) }
 
-    update_status!
+    @timing = false # We read the log initially without timing
+  end
+
+  def save
+    File.open(@state_path, 'w') do |f|
+      f.write(Marshal.dump({
+        players: @players,
+        worlds: @worlds,
+        last_status_change: @last_status_change 
+      }))
+    end
   end
 
   # Detect server status
   # Looks for processes which have log file open for writing
-  def update_status!
+  def update_status
     status = :offline
     fuser = `fuser -v #{@log_path} 2>&1`.split("\n")[2..-1]
     
@@ -47,70 +81,102 @@ class StarboundPanel
       end
 
       @status = status
-      @status_change_time = time
+      @last_status_change = time if @timing
     end
   end
 
-  def parse_line!(line, time)
-    time = Time.now
+  def parse_line(line, time)
+    events = {
+      version: /^Info: Server version '(.+?)'/,
+      login: /^Info: Client '(.+?)' <.> \(.+?\) connected$/,
+      logout: /^Info: Client '(.+?)' <.> \(.+?\) disconnected$/,
+      world: /^Info: Loading world db for world (.+?)$/,
+      unworld: /^Info: Shutting down world (.+?)$/
+    }
 
-    version_event = line.match(/^Info: Server version '(.+?)'/)
-    login_event = line.match(/^Info: Client '(.+?)' <.> \(.+?\) connected$/)
-    logout_event = line.match(/^Info: Client '(.+?)' <.> \(.+?\) disconnected$/)
-    world_event = line.match(/^Info: Loading world db for world (.+?)$/)
-    unworld_event = line.match(/^Info: Shutting down world (.+?)$/)
+    events.each do |name, regex|
+      event = regex.match(line)
+      next unless event
 
-    if version_event
-      puts "Server version: #{version_event[1]}"
-      @version = version_event[1]
-      update_status!
+      case name
+      when :version
+        puts "Server version: #{event[1]}"
+        @version = event[1]
+      when :login
+        name = event[1]
 
-    elsif login_event
-      puts "#{login_event[1]} connected at #{time}"
-      @offline_players.delete_if { |pl| pl[:name] == login_event[1] }
+        player = @players[name] || {}
+        player[:name] = name
+        player[:last_connect] = time if @timing
+        @players[name] = player
 
-      @online_players.push({
-        name: login_event[1],
-        connected_at: time
-      })
+        @online_players.push(player)
+        @offline_players.delete_if { |pl| pl[:name] == name }
+        puts "#{name} connected at #{player[:last_connect]}"
+      when :logout
+        name = event[1]
 
-    elsif logout_event
-      puts "#{logout_event[1]} disconnected at #{time}"
-      @online_players.delete_if { |pl| pl[:name] == logout_event[1] }
+        player = @players[name] || {}
+        player[:name] = name
+        player[:last_disconnect] = time if @timing
+        @players[name] = player
 
-      @offline_players.push({
-        name: logout_event[1],
-        last_seen: time
-      })
+        @online_players.delete_if { |pl| pl[:name] == name }
+        @offline_players.push(player)
+        puts "#{name} disconnected at #{player[:last_disconnect]}"
+      when :world
+        coords = event[1]
 
-    elsif world_event
-      puts "Loaded world #{world_event[1]}"
-      @active_worlds.push({
-        coords: world_event[1],
-        loaded_at: time
-      })
+        world = @worlds[coords] || {}
+        world[:coords] = coords
+        world[:last_load] = time if @timing
+        @worlds[coords] ||= world
 
-    elsif unworld_event
-      puts "Unloaded world #{unworld_event[1]}"
-      @active_worlds.delete_if { |w| w[:coords] == unworld_event[1] }
+        @active_worlds.push(world)
+        puts "Loaded world #{coords}"
+      when :unworld
+        coords = event[1]
+
+        world = @worlds[coords] || {}
+        world[:coords] = coords
+        world[:last_unload] = time if @timing
+        @worlds[coords] ||= world
+
+        @active_worlds.delete_if { |w| w[:coords] == coords }
+        puts "Unloaded world #{coords}"
+      end
+
+      if @timing
+        # For post-initial-load events, check server
+        # status and save state updates
+        update_status; save
+      end
     end
   end
 
-  def read_logs!
-    @log = File.open(@log_path)
-    @log.extend(File::Tail)
-
-    @log.tail do |line|
-      parse_line!(line)
+  def read_logs
+    # Initial read without timing
+    File.read(@log_path).each_line do |line|
+      parse_line(line, nil)
     end
+
+    @timing = true
+    log = File.open(@log_path)
+    log.extend(File::Tail)
+    log.backward(0)
+    log.tail do |line|
+      parse_line(line, Time.now)
+    end
+
+    log.close
   end
 end
 
-panel = StarboundPanel.new(ARGV[0])
+panel = StarboundPanel.load(ARGV[0])
 
 Thread.new do
   begin
-    panel.read_logs!
+    panel.read_logs
   rescue Exception => e
     puts e.message
     puts e.backtrace.join("\n")
@@ -120,7 +186,7 @@ end
 helpers ActionView::Helpers::DateHelper
 
 get '/' do
-  panel.update_status!
+  panel.update_status
   panel.instance_variables.each do |var|
     instance_variable_set var, panel.instance_variable_get(var)
   end
