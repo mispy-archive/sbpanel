@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+  </head>
+  <body>
+    <div class="container">
+      <h1>Server status: <strong><%= @status %></h1>
+      <table class="table table-striped">
+        <h2>Online Players</h2>
+        <tr>
+          <th>Name</th>
+          <th>Online For</th>
+        </tr>
+        <% @online_players.each do |player| %>
+          <tr>
+            <td><%= player[:name] %></td>
+            <td><%= player[:connected_at] %></td>
+          </tr>
+        <% end %>
+      </table>
+
+      <h2>Active Worlds</h2>
+      <table class="table table-striped">
+        <tr>
+          <th>Coordinates</th>
+          <th>Loaded At</th>
+        </tr>
+        <% @active_worlds.each do |world| %>
+          <tr>
+            <td><%= world[:coords] %></td>
+            <td><%= world[:loaded_at] %></td>
+          </tr>
+        <% end %>
+      </table>
+
+      <h2>Offline Players</h2>
+      <table class="table table-striped">
+        <tr>
+          <th>Name</th>
+          <th>Last Seen</th>
+        </tr>
+        <% @offline_players.each do |player| %>
+          <tr>
+            <td><%= player[:name] %></td>
+            <td><%= player[:last_seen] %></td>
+          </tr>
+        <% end %>
+      </table>
+    </div>
+  </body>
+</html>
