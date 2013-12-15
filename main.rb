@@ -13,7 +13,7 @@ class StarboundPanel
   def self.load(log_path)
     state_path = File.join(File.dirname(log_path), ".sbpanel")
 
-    state = nil
+    state = {}
     if File.exists?(state_path)
       begin
         state = Marshal.load(File.read(state_path))
@@ -81,7 +81,7 @@ class StarboundPanel
       end
 
       @status = status
-      @last_status_change = time if @timing
+      @last_status_change = time
     end
   end
 

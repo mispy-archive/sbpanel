@@ -29,7 +29,11 @@
             <td><%= @address %></td>
             <td><%= @port %></td>
             <td><%= @version %></td>
-            <td><%= time_ago_in_words(@last_status_change) %></td>
+            <td>
+              <% if @last_status_change %>
+                <%= time_ago_in_words(@last_status_change) %>
+              <% end %>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -47,7 +51,11 @@
             <% @online_players.each do |player| %>
               <tr>
                 <td><%= player[:name] %></td>
-                <td><%= time_ago_in_words(player[:last_connect]) %></td>
+                <td>
+                  <% if player[:last_connect] %>
+                    <%= time_ago_in_words(player[:last_connect]) %>
+                  <% end %>
+                </td>
               </tr>
             <% end %>
           </tbody>
@@ -66,7 +74,11 @@
           <% @active_worlds.each do |world| %>
             <tr>
               <td><%= world[:coords] %></td>
-              <td><%= time_ago_in_words(world[:last_load]) %></td>
+              <td>
+                <% if world[:last_load] %>
+                  <%= time_ago_in_words(world[:last_load]) %>
+                <% end %>
+              </td>
             </tr>
           <% end %>
         </tbody>
@@ -82,7 +94,11 @@
           <% @offline_players.each do |player| %>
             <tr>
               <td><%= player[:name] %></td>
-              <td><%= time_ago_in_words(player[:last_disconnect]) %> ago</td>
+              <td>
+                <% if player[:last_disconnect] %>
+                  <%= time_ago_in_words(player[:last_disconnect]) %> ago
+                <% end %>
+              </td>
             </tr>
           <% end %>
         </table>
