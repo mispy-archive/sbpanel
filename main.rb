@@ -35,12 +35,12 @@ class StarboundPanel
     @address = "starbound.mispy.me"
     @port = 21025
     
+    @status = state[:status] || :unknown
+    @last_status_change = state[:last_status_change] || Time.now # Persist last observed status change
     @players = state[:players] || {} # Persist info for players we've seen
     @worlds = state[:worlds] || {} # Persist info for worlds we've seen
-    @last_status_change = state[:last_status_change] || Time.now # Persist last observed status change
     @chat = state[:chat] || [] # Chat logs
 
-    @status = :unknown # Whether we're offline/online
     @version = 'unknown' # Server version
     @online_players = [] # Players we've seen connect
     @active_worlds = [] # Worlds we've seen activated
@@ -54,7 +54,9 @@ class StarboundPanel
       f.write(Marshal.dump({
         players: @players,
         worlds: @worlds,
-        last_status_change: @last_status_change 
+        status: @status,
+        last_status_change: @last_status_change,
+        chat: @chat
       }))
     end
   end
@@ -153,11 +155,11 @@ class StarboundPanel
         }
 
         # Hacky attempt to prevent chat desync
-        if @timing || (@last_chat == @chat[-2] && chat != @chat[-1])
+        if @timing || @last_chat == @chat[-1]
           @chat.push(chat)
           puts "#{chat[:name]}: #{chat[:text]}"
         end
-        @last_chat = @chat
+        @last_chat = chat
       end
 
       if @timing
