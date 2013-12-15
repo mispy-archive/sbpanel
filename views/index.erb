@@ -3,106 +3,135 @@
   <head>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <style>
-      td {
+      .status td {
         width: 20%;
       }
 
-      td:last-child, th:last-child {
+      .status td:last-child, th:last-child {
         text-align: right;
+      }
+
+      .chat td:first-child {
+        max-width: 100px;
+      }
+
+      .chat table {
+        margin-top: 63px;
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <h2>Starbound server is <strong><%= @status %></strong></h2>
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Address</th>
-            <th>Port</th>
-            <th>Version</th>
-            <th><%= @status.capitalize %> For</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><%= @address %></td>
-            <td><%= @port %></td>
-            <td><%= @version %></td>
-            <td>
-              <% if @last_status_change %>
-                <%= time_ago_in_words(@last_status_change) %>
-              <% end %>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <% if @online_players.length > 0 %>
-        <h2>Online Players</h2>
-        <table class="table table-striped">
+      <div class="status col-md-8">
+        <h2>Starbound server is <strong><%= @status %></strong></h2>
+        <table class="table">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Online For</th>
+              <th>Address</th>
+              <th>Port</th>
+              <th>Version</th>
+              <th><%= @status.capitalize %> For</th>
             </tr>
           </thead>
           <tbody>
-            <% @online_players.each do |player| %>
+            <tr>
+              <td><%= @address %></td>
+              <td><%= @port %></td>
+              <td><%= @version %></td>
+              <td>
+                <% if @last_status_change %>
+                  <%= time_ago_in_words(@last_status_change) %>
+                <% end %>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <% if @online_players.length > 0 %>
+          <h2>Online Players</h2>
+          <table class="table table-striped">
+            <thead>
               <tr>
-                <td><%= player[:name] %></td>
+                <th>Name</th>
+                <th>Online For</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @online_players.each do |player| %>
+                <tr>
+                  <td><%= player[:name] %></td>
+                  <td>
+                    <% if player[:last_connect] %>
+                      <%= time_ago_in_words(player[:last_connect]) %>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% end %>
+
+        <h2>Active Worlds</h2>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Coordinates</th>
+              <th>Loaded For</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @active_worlds.each do |world| %>
+              <tr>
+                <td><%= world[:coords] %></td>
                 <td>
-                  <% if player[:last_connect] %>
-                    <%= time_ago_in_words(player[:last_connect]) %>
+                  <% if world[:last_load] %>
+                    <%= time_ago_in_words(world[:last_load]) %>
                   <% end %>
                 </td>
               </tr>
             <% end %>
           </tbody>
         </table>
-      <% end %>
 
-      <h2>Active Worlds</h2>
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Coordinates</th>
-            <th>Loaded For</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @active_worlds.each do |world| %>
+        <% if @offline_players.length > 0 %>
+          <h2>Offline Players</h2>
+          <table class="table table-striped">
             <tr>
-              <td><%= world[:coords] %></td>
-              <td>
-                <% if world[:last_load] %>
-                  <%= time_ago_in_words(world[:last_load]) %>
-                <% end %>
-              </td>
+              <th>Name</th>
+              <th>Last Seen</th>
             </tr>
-          <% end %>
-        </tbody>
-      </table>
+            <% @offline_players.each do |player| %>
+              <tr>
+                <td><%= player[:name] %></td>
+                <td>
+                  <% if player[:last_disconnect] %>
+                    <%= time_ago_in_words(player[:last_disconnect]) %> ago
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </table>
+        <% end %>
+      </div>
 
-      <% if @offline_players.length > 0 %>
-        <h2>Offline Players</h2>
+      <div class="chat col-md-4">
         <table class="table table-striped">
-          <tr>
-            <th>Name</th>
-            <th>Last Seen</th>
-          </tr>
-          <% @offline_players.each do |player| %>
+          <thead>
             <tr>
-              <td><%= player[:name] %></td>
-              <td>
-                <% if player[:last_disconnect] %>
-                  <%= time_ago_in_words(player[:last_disconnect]) %> ago
-                <% end %>
-              </td>
+              <th>Chat</th>
+              <th></th>
             </tr>
-          <% end %>
+          </thead>
+          <tbody>
+            <% @chat.last(50).reverse.each do |chat| %>
+              <tr>
+                <td><%= chat[:name] %></td>
+                <td><%= chat[:text] %></td>
+              </tr>
+            <% end %>
+          </tbody>
         </table>
-      <% end %>
+      </div>
     </div>
   </body>
 </html>

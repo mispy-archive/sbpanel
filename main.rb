@@ -38,6 +38,7 @@ class StarboundPanel
     @players = state[:players] || {} # Persist info for players we've seen
     @worlds = state[:worlds] || {} # Persist info for worlds we've seen
     @last_status_change = state[:last_status_change] || Time.now # Persist last observed status change
+    @chat = state[:chat] || [] # Chat logs
 
     @status = :unknown # Whether we're offline/online
     @version = 'unknown' # Server version
@@ -91,7 +92,8 @@ class StarboundPanel
       login: /^Info: Client '(.+?)' <.> \(.+?\) connected$/,
       logout: /^Info: Client '(.+?)' <.> \(.+?\) disconnected$/,
       world: /^Info: Loading world db for world (.+?)$/,
-      unworld: /^Info: Shutting down world (.+?)$/
+      unworld: /^Info: Shutting down world (.+?)$/,
+      chat: /^Info:  <(.+?)> (.+?)$/
     }
 
     events.each do |name, regex|
@@ -144,6 +146,18 @@ class StarboundPanel
 
         @active_worlds.delete_if { |w| w[:coords] == coords }
         puts "Unloaded world #{coords}"
+      when :chat
+        chat = {
+          name: event[1],
+          text: event[2]
+        }
+
+        # Hacky attempt to prevent chat desync
+        if @timing || (@last_chat == @chat[-2] && chat != @chat[-1])
+          @chat.push(chat)
+          puts "#{chat[:name]}: #{chat[:text]}"
+        end
+        @last_chat = @chat
       end
 
       if @timing
