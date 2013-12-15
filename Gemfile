@@ -3,4 +3,5 @@ source 'https://rubygems.org'
 
 gem 'sinatra'
 gem 'webrick'
-gem 'activesupport', require: 'active_support'
+gem 'file-tail'
+gem 'actionpack'

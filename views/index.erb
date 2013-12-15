@@ -2,51 +2,91 @@
 <html>
   <head>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <style>
+      td {
+        width: 20%;
+      }
+
+      td:last-child, th:last-child {
+        text-align: right;
+      }
+    </style>
   </head>
   <body>
     <div class="container">
-      <h1>Server status: <strong><%= @status %></h1>
+      <h2>Starbound server is <strong><%= @status %></strong></h2>
       <table class="table table-striped">
-        <h2>Online Players</h2>
-        <tr>
-          <th>Name</th>
-          <th>Online For</th>
-        </tr>
-        <% @online_players.each do |player| %>
+        <thead>
           <tr>
-            <td><%= player[:name] %></td>
-            <td><%= player[:connected_at] %></td>
+            <th>Address</th>
+            <th>Port</th>
+            <th>Version</th>
+            <th><%= @status.capitalize %> For</th>
           </tr>
-        <% end %>
+        </thead>
+        <tbody>
+          <tr>
+            <td><%= @address %></td>
+            <td><%= @port %></td>
+            <td><%= @version %></td>
+            <td><%= time_ago_in_words(@status_change_time) %></td>
+          </tr>
+        </tbody>
       </table>
+
+      <% if @online_players.length > 0 %>
+        <h2>Online Players</h2>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Online For</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @online_players.each do |player| %>
+              <tr>
+                <td><%= player[:name] %></td>
+                <td><%= time_ago_in_words(player[:connected_at]) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% end %>
 
       <h2>Active Worlds</h2>
       <table class="table table-striped">
-        <tr>
-          <th>Coordinates</th>
-          <th>Loaded At</th>
-        </tr>
-        <% @active_worlds.each do |world| %>
+        <thead>
           <tr>
-            <td><%= world[:coords] %></td>
-            <td><%= world[:loaded_at] %></td>
+            <th>Coordinates</th>
+            <th>Loaded For</th>
           </tr>
-        <% end %>
+        </thead>
+        <tbody>
+          <% @active_worlds.each do |world| %>
+            <tr>
+              <td><%= world[:coords] %></td>
+              <td><%= time_ago_in_words(world[:loaded_at]) %></td>
+            </tr>
+          <% end %>
+        </tbody>
       </table>
 
-      <h2>Offline Players</h2>
-      <table class="table table-striped">
-        <tr>
-          <th>Name</th>
-          <th>Last Seen</th>
-        </tr>
-        <% @offline_players.each do |player| %>
+      <% if @offline_players.length > 0 %>
+        <h2>Offline Players</h2>
+        <table class="table table-striped">
           <tr>
-            <td><%= player[:name] %></td>
-            <td><%= player[:last_seen] %></td>
+            <th>Name</th>
+            <th>Last Seen</th>
           </tr>
-        <% end %>
-      </table>
+          <% @offline_players.each do |player| %>
+            <tr>
+              <td><%= player[:name] %></td>
+              <td><%= time_ago_in_words(player[:last_seen]) %> ago</td>
+            </tr>
+          <% end %>
+        </table>
+      <% end %>
     </div>
   </body>
 </html>
