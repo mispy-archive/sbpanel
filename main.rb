@@ -85,7 +85,16 @@ class StarboundPanel
 
       @status = status
       @last_status_change = time
+      reset!
     end
+  end
+
+  # Reset non-persistent state
+  def reset!
+    @last_status_change = Time.now
+    @online_players = []
+    @active_worlds = []
+    @offline_players = @players.values.select { |pl| !@online_players.include?(pl) }
   end
 
   def parse_line(line, time)
@@ -106,6 +115,7 @@ class StarboundPanel
       when :version
         puts "Server version: #{event[1]}"
         @version = event[1]
+        reset!
       when :login
         name = event[1]
 
@@ -136,7 +146,7 @@ class StarboundPanel
         world[:last_load] = time if @timing
         @worlds[coords] ||= world
 
-        @active_worlds.push(world)
+        @active_worlds.push(world) unless @active_worlds.find { |w| w[:coords] == coords }
         puts "Loaded world #{coords}"
       when :unworld
         coords = event[1]

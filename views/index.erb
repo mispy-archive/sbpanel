@@ -113,27 +113,29 @@
           </table>
         <% end %>
 
-        <h2>Active Worlds</h2>
-        <table class="table table-striped tablesorter">
-          <thead>
-            <tr>
-              <th>Coordinates</th>
-              <th>Loaded For</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% @active_worlds.each do |world| %>
+        <% if @active_worlds.length > 0 %>
+          <h2>Active Worlds</h2>
+          <table class="table table-striped tablesorter">
+            <thead>
               <tr>
-                <td><%= world[:coords] %></td>
-                <td>
-                  <% if world[:last_load] %>
-                    <%= time_ago_in_words(world[:last_load]) %>
-                  <% end %>
-                </td>
+                <th>Coordinates</th>
+                <th>Loaded For</th>
               </tr>
-            <% end %>
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              <% @active_worlds.each do |world| %>
+                <tr>
+                  <td><%= world[:coords] %></td>
+                  <td>
+                    <% if world[:last_load] %>
+                      <%= time_ago_in_words(world[:last_load]) %>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% end %>
 
         <% if @offline_players.length > 0 %>
           <h2>Offline Players</h2>
