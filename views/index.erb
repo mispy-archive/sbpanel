@@ -1,7 +1,49 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <script src="/js/jquery-1.10.2.min.js"></script>
+    <script src="/js/jquery.tablesorter.js"></script>
+    <script src="/js/jquery.tablesorter.widgets.js"></script>
+    <script>
+      $(document).ready(function() {
+
+        $.extend($.tablesorter.themes.bootstrap, {
+          // these classes are added to the table. To see other table classes available,
+          // look here: http://twitter.github.com/bootstrap/base-css.html#tables
+          table      : 'table table-bordered',
+          caption    : 'caption',
+          header     : 'bootstrap-header', // give the header a gradient background
+          sortNone   : 'bootstrap-icon-unsorted',
+          sortAsc    : 'icon-chevron-up glyphicon glyphicon-chevron-up',     // includes classes for Bootstrap v2 & v3
+          sortDesc   : 'icon-chevron-down glyphicon glyphicon-chevron-down', // includes classes for Bootstrap v2 & v3
+        });
+
+        $('.tablesorter').tablesorter({
+          theme: 'bootstrap',
+          widthFixed: true,
+          headerTemplate : '{content} {icon}', // new in v2.7. Needed to add the bootstrap icon!
+          // widget code contained in the jquery.tablesorter.widgets.js file
+          // use the zebra stripe widget if you plan on hiding any rows (filter widget)
+          widgets : [ "uitheme" ],
+
+          widgetOptions : {
+            // using the default zebra striping class name, so it actually isn't included in the theme variable above
+            // this is ONLY needed for bootstrap theming if you are using the filter widget, because rows are hidden
+            zebra : ["even", "odd"],
+
+            // reset filters button
+            filter_reset : ".reset"
+
+            // set the uitheme widget to use the bootstrap theme class names
+            // this is no longer required, if theme is set
+            // ,uitheme : "bootstrap"
+
+          }
+        });
+      });
+    </script>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/tablesorter.bootstrap.css">
     <style>
       .status td {
         width: 20%;
@@ -49,7 +91,7 @@
 
         <% if @online_players.length > 0 %>
           <h2>Online Players</h2>
-          <table class="table table-striped">
+          <table class="table table-striped tablesorter">
             <thead>
               <tr>
                 <th>Name</th>
@@ -72,7 +114,7 @@
         <% end %>
 
         <h2>Active Worlds</h2>
-        <table class="table table-striped">
+        <table class="table table-striped tablesorter">
           <thead>
             <tr>
               <th>Coordinates</th>
@@ -95,21 +137,25 @@
 
         <% if @offline_players.length > 0 %>
           <h2>Offline Players</h2>
-          <table class="table table-striped">
-            <tr>
-              <th>Name</th>
-              <th>Last Seen</th>
-            </tr>
-            <% @offline_players.each do |player| %>
+          <table id="waffles" class="table table-striped tablesorter">
+            <thead>
               <tr>
-                <td><%= player[:name] %></td>
-                <td>
-                  <% if player[:last_disconnect] %>
-                    <%= time_ago_in_words(player[:last_disconnect]) %> ago
-                  <% end %>
-                </td>
+                <th>Name</th>
+                <th>Last Seen</th>
               </tr>
-            <% end %>
+            </thead>
+            <tbody>
+              <% @offline_players.each do |player| %>
+                <tr>
+                  <td><%= player[:name] %></td>
+                  <td>
+                    <% if player[:last_disconnect] %>
+                      <%= time_ago_in_words(player[:last_disconnect]) %> ago
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
           </table>
         <% end %>
       </div>
