@@ -91,7 +91,7 @@ class StarboundPanel
 
   # Reset non-persistent state
   def reset!
-    @last_status_change = Time.now
+    @last_status_change = Time.now if @timing
     @online_players = []
     @active_worlds = []
     @offline_players = @players.values.select { |pl| !@online_players.include?(pl) }
