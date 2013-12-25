@@ -2,9 +2,24 @@
 
 require 'sbpanel'
 require 'sinatra'
+require 'optparse'
+
+options = {
+  bind: "0.0.0.0",
+  port: 8000,
+}
+
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: sbpanel [options] STARBOUND_LOG_PATH"
+
+  opts.on("-v"
+end
+
 
 set :port, 8000
 set :bind, "0.0.0.0"
+set :root, File.join(File.dirname(__FILE__), '..')
 
 panel = SBPanel::Game.load(ARGV[0])
 
