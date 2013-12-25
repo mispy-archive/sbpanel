@@ -40,7 +40,15 @@
             // this is no longer required, if theme is set
             // ,uitheme : "bootstrap"
 
-          }
+          },
+
+          textExtraction: function(node) {
+              var attr = $(node).attr('data-sort-value');
+              if (typeof attr !== 'undefined' && attr !== false) {
+                  return attr;
+              }
+              return $(node).text(); 
+          } 
         });
       });
     </script>
@@ -104,7 +112,7 @@
               <% @online_players.each do |player| %>
                 <tr>
                   <td><%= player[:name] %></td>
-                  <td>
+                  <td data-sort-value="<%= -player[:last_connect].to_i %>">
                     <% if player[:last_connect] %>
                       <%= time_ago_in_words(player[:last_connect]) %>
                     <% end %>
@@ -128,7 +136,7 @@
               <% @active_worlds.each do |world| %>
                 <tr>
                   <td><%= world[:coords] %></td>
-                  <td>
+                  <td data-sort-value="<%= -world[:last_load].to_i %>">
                     <% if world[:last_load] %>
                       <%= time_ago_in_words(world[:last_load]) %>
                     <% end %>
@@ -152,7 +160,7 @@
               <% @offline_players.each do |player| %>
                 <tr>
                   <td><%= player[:name] %></td>
-                  <td>
+                  <td data-sort-value="<%= -player[:last_disconnect].to_i %>">
                     <% if player[:last_disconnect] %>
                       <%= time_ago_in_words(player[:last_disconnect]) %> ago
                     <% end %>
