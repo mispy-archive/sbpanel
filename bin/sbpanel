@@ -1,0 +1,28 @@
+#!/usr/bin/env ruby
+
+require 'sbpanel'
+require 'sinatra'
+
+set :port, 8000
+set :bind, "0.0.0.0"
+
+panel = SBPanel::Game.load(ARGV[0])
+
+Thread.new do
+  begin
+    panel.read_logs
+  rescue Exception => e
+    puts e.message
+    puts e.backtrace.join("\n")
+  end
+end
+
+helpers ActionView::Helpers::DateHelper
+
+get '/' do
+  panel.update_status
+  panel.instance_variables.each do |var|
+    instance_variable_set var, panel.instance_variable_get(var)
+  end
+  erb :index
+end
