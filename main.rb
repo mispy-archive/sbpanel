@@ -102,8 +102,8 @@ class StarboundPanel
       version: /^Info: Server version '(.+?)'/,
       login: /^Info: Client '(.+?)' <.> \(.+?\) connected$/,
       logout: /^Info: Client '(.+?)' <.> \(.+?\) disconnected$/,
-      world: /^Info: Loading world db for world (.+?)$/,
-      unworld: /^Info: Shutting down world (.+?)$/,
+      world: /^Info: Loading world db for world (\S+)/,
+      unworld: /^Info: Shutting down world (\S+)/,
       chat: /^Info:  <(.+?)> (.+?)$/
     }
 
