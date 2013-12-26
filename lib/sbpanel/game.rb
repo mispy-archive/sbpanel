@@ -119,6 +119,7 @@ module SBPanel
           player = @players[name] || {}
           player[:name] = name
           player[:last_connect] = time if @timing
+          player[:last_seen] = time if @timing
           @players[name] = player
 
           @online_players.push(player) unless @online_players.find { |pl| pl[:name] == name }
@@ -129,12 +130,12 @@ module SBPanel
 
           player = @players[name] || {}
           player[:name] = name
-          player[:last_disconnect] = time if @timing
+          player[:last_seen] = time if @timing
           @players[name] = player
 
           @online_players.delete_if { |pl| pl[:name] == name }
           @offline_players.push(player) unless @offline_players.find { |pl| pl[:name] == name }
-          puts "#{name} disconnected at #{player[:last_disconnect]}"
+          puts "#{name} disconnected at #{player[:last_seen]}"
         when :world
           coords = event[1]
 
@@ -156,10 +157,17 @@ module SBPanel
           @active_worlds.delete_if { |w| w[:coords] == coords }
           puts "Unloaded world #{coords}"
         when :chat
+          name = event[1]
+
           chat = {
-            name: event[1],
+            name: name,
             text: event[2]
           }
+
+          player = @players[name] || {}
+          player[:name] = name
+          player[:last_seen] = time if @timing
+          @players[name] ||= player
 
           # Hacky attempt to prevent chat desync
           if @timing || @last_chat == @chat[-1]

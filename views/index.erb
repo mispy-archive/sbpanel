@@ -160,9 +160,9 @@
               <% @offline_players.each do |player| %>
                 <tr>
                   <td><%= player[:name] %></td>
-                  <td data-sort-value="<%= -player[:last_disconnect].to_i %>">
-                    <% if player[:last_disconnect] %>
-                      <%= time_ago_in_words(player[:last_disconnect]) %> ago
+                  <td data-sort-value="<%= -player[:last_seen].to_i %>">
+                    <% if player[:last_seen] %>
+                      <%= time_ago_in_words(player[:last_seen]) %> ago
                     <% end %>
                   </td>
                 </tr>
