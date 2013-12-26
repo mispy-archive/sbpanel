@@ -5,7 +5,7 @@ require 'action_view'
 
 module SBPanel
   class Game
-    attr_accessor :log_path, :state_path
+    attr_accessor :log_path, :state_path, :address
 
     def self.load(log_path)
       state_path = File.join(File.dirname(log_path), ".sbpanel")

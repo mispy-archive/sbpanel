@@ -1,31 +1,61 @@
 #!/usr/bin/env ruby
 
 require 'sbpanel'
-require 'sinatra'
 require 'optparse'
+require 'socket'
 
 options = {
   bind: "0.0.0.0",
   port: 8000,
+  address: Socket.gethostname
 }
 
-
-OptionParser.new do |opts|
+optparse = OptionParser.new do |opts|
   opts.banner = "Usage: sbpanel [options] STARBOUND_LOG_PATH"
 
-  opts.on("-v"
+  opts.on("-b", "--bind ADDR", "Address to bind [#{options[:bind]}]") do |bind|
+    options[:bind] = bind
+  end
+
+  opts.on("-p", "--port PORT", "Port to bind [#{options[:port]}]") do |port|
+    options[:port] = port
+  end
+
+  opts.on("-a", "--address ADDR", "Server address to display [#{options[:address]}]") do |address|
+    options[:address] = address
+  end
+
+  opts.on('-h', '--help', 'Display this screen') do
+    puts opts
+    exit
+  end
 end
 
+optparse.parse!
 
-set :port, 8000
-set :bind, "0.0.0.0"
+if ARGV.empty?
+  puts optparse
+  exit 1
+end
+
+if !File.exists?(ARGV[-1])
+  puts "Error: Couldn't find log file: #{ARGV[-1]}"
+  puts optparse
+  exit 1
+end
+
+require 'sinatra'
+
+set :port, options[:port]
+set :bind, options[:bind]
 set :root, File.join(File.dirname(__FILE__), '..')
 
-panel = SBPanel::Game.load(ARGV[0])
+game = SBPanel::Game.load(ARGV[0])
+game.address = options[:address]
 
 Thread.new do
   begin
-    panel.read_logs
+    game.read_logs
   rescue Exception => e
     puts e.message
     puts e.backtrace.join("\n")
@@ -35,9 +65,9 @@ end
 helpers ActionView::Helpers::DateHelper
 
 get '/' do
-  panel.update_status
-  panel.instance_variables.each do |var|
-    instance_variable_set var, panel.instance_variable_get(var)
+  game.update_status
+  game.instance_variables.each do |var|
+    instance_variable_set var, game.instance_variable_get(var)
   end
   erb :index
 end
