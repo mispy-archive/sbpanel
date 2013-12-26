@@ -1,4 +1,4 @@
-# sbpanel 0.0.3
+# sbpanel 0.0.4
 
 Starbound web status panel! Parses the server debug log to show connected players, active worlds and chat history. Can be observed here: [starbound.mispy.me](http://starbound.mispy.me/)
 
