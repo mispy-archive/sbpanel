@@ -97,10 +97,10 @@ module SBPanel
     def parse_line(line, time)
       events = {
         version: /^Info: Server version '(.+?)'/,
-        login: /^Info: Client '(.+?)' <.> \(.+?\) connected$/,
-        logout: /^Info: Client '(.+?)' <.> \(.+?\) disconnected$/,
-        world: /^Info: Loading world db for world (\S+)/,
-        unworld: /^Info: Shutting down world (\S+)/,
+        login: /^Info: (?:UniverseServer: )?Client '(.+?)' <.> \(.+?\) connected$/,
+        logout: /^Info: (?:UniverseServer: )?Client '(.+?)' <.> \(.+?\) disconnected$/,
+        world: /^Info: (?:UniverseServer: )?Loading world db for world (\S+)/,
+        unworld: /^Info: (?:UniverseServer: )?Shutting down world (\S+)/,
         chat: /^Info:  <(.+?)> (.+?)$/
       }
 
