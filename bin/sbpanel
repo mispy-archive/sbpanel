@@ -3,11 +3,12 @@
 require 'sbpanel'
 require 'optparse'
 require 'socket'
+require 'time'
 
 $options = {
   bind: "0.0.0.0",
   port: 8000,
-  address: Socket.gethostname
+  address: nil
 }
 
 optparse = OptionParser.new do |opts|
@@ -52,7 +53,7 @@ class Panel < Sinatra::Base
   set :root, File.join(File.dirname(__FILE__), '..')
 
   game = SBPanel::Game.load(ARGV[0])
-  game.address = $options[:address]
+  game.address = $options[:address] unless $options[:address].nil?
 
   Thread.new do
     begin
@@ -66,7 +67,7 @@ class Panel < Sinatra::Base
   helpers ActionView::Helpers::DateHelper
 
   get '/' do
-    game.update_status
+    game.update_status!
     game.instance_variables.each do |var|
       instance_variable_set var, game.instance_variable_get(var)
     end

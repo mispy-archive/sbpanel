@@ -67,15 +67,27 @@
         max-width: 100px;
       }
 
-      .chat table {
-        margin-top: 63px;
+      img {
+        border-radius: 16px 20px 20px 20px;
+      }
+
+      h2 {
+        margin-top: 0;
       }
     </style>
   </head>
   <body>
     <div class="container">
+      <hr>
+      <img src="/starbound.jpg">
+      <hr>
+      <div class="col-md-8">
+      <h2>Starbound server is <strong><%= @status %></strong></h2>
+      <p>Before playing, please install this <a href="http://mispy.me/misc/mispy-modpack-1.7z">cute modpack</a>! Our primary base is on Gamma Alpha Tel Majoris III c at 333338904, -537758127, a lush planet with light glowing rain. Once you've made it there you can bookmark the teleporter and return whenever you like!</p>
+    </div>
+    </div>
+    <div class="container">
       <div class="status col-md-8">
-        <h2>Starbound server is <strong><%= @status %></strong></h2>
         <table class="table">
           <thead>
             <tr>
@@ -149,7 +161,7 @@
 
         <% if @offline_players.length > 0 %>
           <h2>Offline Players</h2>
-          <table id="waffles" class="table table-striped tablesorter">
+          <table class="table table-striped tablesorter">
             <thead>
               <tr>
                 <th>Name</th>
@@ -176,13 +188,15 @@
         <table class="table table-striped">
           <thead>
             <tr>
+              <th>Time</th>
+              <th>User</th>
               <th>Chat</th>
-              <th></th>
             </tr>
           </thead>
           <tbody>
             <% @chat.last(50).reverse.each do |chat| %>
               <tr>
+                <td><%= chat[:time].strftime("%b %d %H:%M") %></td>
                 <td><%= chat[:name] %></td>
                 <td><%= chat[:text] %></td>
               </tr>
